@@ -1,26 +1,29 @@
 package six;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class CountingDuplicates {
 
     public static int duplicateCount(String text) {
-        String lowerCase = text.toLowerCase();
-        return (int)Arrays.stream(lowerCase.split(""))
-                .collect(Collectors.toMap(str -> str, str -> 1, Integer::sum)).values().stream()
-                .filter(value -> value > 1).count();
+        text = text.toLowerCase();
+        return (int) text.chars()
+                .mapToObj(ch -> (char) ch)
+                .collect(Collectors.groupingBy(i -> i, Collectors.counting()))
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() > 1)
+                .count();
     }
 
     public static int duplicateCountWithoutStream(String text) {
-        String lowerCase = text.toLowerCase();
+        text = text.toLowerCase();
         int count = 0;
-        while(!lowerCase.isEmpty()) {
-            String firstChar = lowerCase.substring(0, 1);
-            lowerCase = lowerCase.substring(1);
-            if(lowerCase.contains(firstChar)) {
+        while(!text.isEmpty()) {
+            String firstChar = text.substring(0, 1);
+            text = text.substring(1);
+            if(text.contains(firstChar)) {
                 count++;
-                lowerCase = lowerCase.replace(firstChar, "");
+                text = text.replace(firstChar, "");
             }
         }
         return count;
