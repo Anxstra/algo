@@ -11,5 +11,6 @@ import java.util.List;
 public class ShowFor {
 
     private ShowType type;
+
     private List<String> users;
 }

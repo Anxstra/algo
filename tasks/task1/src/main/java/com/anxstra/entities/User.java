@@ -11,8 +11,16 @@ import java.time.LocalDate;
 public class User {
 
     private Integer id;
+
     private String name;
+
     private String secondName;
+
     private Sex sex;
+
     private LocalDate birthday;
+
+    public String getFullName() {
+        return name + " " + secondName;
+    }
 }

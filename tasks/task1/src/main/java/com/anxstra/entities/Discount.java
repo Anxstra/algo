@@ -12,8 +12,12 @@ import java.time.LocalDate;
 public class Discount {
 
     private Integer id;
+
     private DiscountType type;
+
     private LocalDate dateFrom;
+
     private LocalDate dateTo;
+
     private BigDecimal discountAmount;
 }

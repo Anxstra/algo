@@ -14,10 +14,15 @@ import java.time.LocalDate;
 public class DiscountAdapter extends TypeAdapter<Discount> {
 
     private static final String ID_PROPERTY_NAME = "id";
+
     private static final String TYPE_PROPERTY_NAME = "type";
+
     private static final String DATE_PROPERTY_NAME = "date";
+
     private static final String DATE_FROM_PROPERTY_NAME = "dateFrom";
+
     private static final String DATE_TO_PROPERTY_NAME = "dateTo";
+
     private static final String DISCOUNT_PROPERTY_NAME = "discount";
 
 

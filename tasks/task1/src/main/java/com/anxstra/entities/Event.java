@@ -12,7 +12,10 @@ import java.time.LocalDate;
 public class Event {
 
     private Integer id;
+
     private Currency currency;
+
     private BigDecimal cost;
+
     private LocalDate date;
 }
