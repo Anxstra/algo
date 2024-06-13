@@ -1,27 +1,52 @@
 package six;
 
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class CountingDuplicates {
 
     public static int duplicateCount(String text) {
-        text = text.toLowerCase();
+        String loweredText = text.toLowerCase();
         return (int) text.chars()
-                .mapToObj(ch -> (char) ch)
-                .collect(Collectors.groupingBy(i -> i, Collectors.counting()))
-                .entrySet()
-                .stream()
-                .filter(entry -> entry.getValue() > 1)
-                .count();
+                         .filter(ch -> loweredText.indexOf(ch) != loweredText.lastIndexOf(ch))
+                         .distinct()
+                         .count();
+    }
+
+    public static int duplicateCountWithFrequency(String text) {
+        List<String> chars = Arrays.asList(text.toLowerCase()
+                                               .split(""));
+        return (int) chars.stream()
+                          .filter(ch -> Collections.frequency(chars, ch) > 1)
+                          .distinct()
+                          .count();
+    }
+
+    public static int duplicateCountWithHashSet(String text) {
+        Set<Character> duplicates = new HashSet<>();
+        Set<Character> chars = new HashSet<>();
+        text.toLowerCase()
+            .chars()
+            .forEach(c -> {
+                if (chars.contains((char) c)) {
+                    duplicates.add((char) c);
+                } else {
+                    chars.add((char) c);
+                }
+            });
+        return duplicates.size();
     }
 
     public static int duplicateCountWithoutStream(String text) {
         text = text.toLowerCase();
         int count = 0;
-        while(!text.isEmpty()) {
+        while (!text.isEmpty()) {
             String firstChar = text.substring(0, 1);
             text = text.substring(1);
-            if(text.contains(firstChar)) {
+            if (text.contains(firstChar)) {
                 count++;
                 text = text.replace(firstChar, "");
             }
@@ -39,6 +64,8 @@ public class CountingDuplicates {
                 testHundredB + testThousandA;
 
         System.out.println(3 == duplicateCount(test));
+        System.out.println(3 == duplicateCountWithFrequency(test));
+        System.out.println(3 == duplicateCountWithHashSet(test));
         System.out.println(3 == duplicateCountWithoutStream(test));
     }
 
