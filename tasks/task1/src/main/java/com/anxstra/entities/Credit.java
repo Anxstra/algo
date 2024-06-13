@@ -22,6 +22,9 @@ public class Credit {
     @Expose(serialize = false, deserialize = false)
     private LocalDate repaymentDate;
 
+    @Expose(serialize = false, deserialize = false)
+    private int processedTransactions;
+
     private Period period;
 
     private BigDecimal money;
@@ -30,6 +33,7 @@ public class Credit {
 
     public void applyTransaction(Transaction transaction) {
         money = BigDecimal.ZERO.max(money.subtract(transaction.getMoney()));
+        processedTransactions++;
         if (money.equals(BigDecimal.ZERO)) {
             repaymentDate = transaction.getDate();
         }
