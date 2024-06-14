@@ -4,8 +4,8 @@ import com.anxstra.dao.repositories.EventRepository;
 import com.anxstra.entities.Event;
 import com.anxstra.entities.enums.Currency;
 import com.anxstra.gson.config.DBReader;
-import com.anxstra.gson.config.GsonConfigurer;
 import com.anxstra.utils.DateUtils;
+import com.anxstra.utils.GsonUtils;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -18,8 +18,7 @@ public class EventRepositoryImpl implements EventRepository {
         return DBReader.getJsonArray("events")
                        .asList()
                        .stream()
-                       .map(el -> GsonConfigurer.getGson()
-                                                .fromJson(el, Event.class))
+                       .map(el -> GsonUtils.deserialize(el, Event.class))
                        .filter(event -> DateUtils.isBetween(event.getDate(), from, to) && currency == event.getCurrency())
                        .max(Comparator.comparing(Event::getDate));
     }

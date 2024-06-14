@@ -3,6 +3,7 @@ package com.anxstra.gson.config;
 import com.anxstra.entities.Setting;
 import com.anxstra.exceptions.FieldIsMissingException;
 import com.anxstra.exceptions.RequiredFileIsMissing;
+import com.anxstra.utils.GsonUtils;
 import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 import static com.anxstra.gson.config.PathConstants.SETTINGS_FILE_ROOT_NAME;
 import static com.anxstra.gson.config.PathConstants.SETTING_FILE_NAME;
@@ -22,11 +24,11 @@ public class AppConfigurer {
     }
 
     public static Setting getSetting() {
-        if (setting == null) {
+        if (Objects.isNull(setting)) {
             try {
                 setting = loadSettings();
             } catch (IOException exception) {
-                System.out.println(exception.getMessage());
+                System.err.println(exception.getMessage());
                 System.exit(0);
             }
         }
@@ -37,17 +39,14 @@ public class AppConfigurer {
         InputStream inputStream = Thread.currentThread()
                                         .getContextClassLoader()
                                         .getResourceAsStream(SETTING_FILE_NAME);
-        if (inputStream == null) {
+        if (Objects.isNull(inputStream)) {
             throw new RequiredFileIsMissing("settings.json file cannot be found");
         }
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            JsonObject documentRoot = GsonConfigurer.getGson()
-                                                    .fromJson(reader, JsonObject.class);
+            JsonObject documentRoot = GsonUtils.deserialize(reader, JsonObject.class);
             JsonObject settingObject = documentRoot.getAsJsonObject(SETTINGS_FILE_ROOT_NAME);
             verifySetting(settingObject);
-            return GsonConfigurer.getGson()
-                                 .fromJson(settingObject, Setting.class);
-
+            return GsonUtils.deserialize(settingObject, Setting.class);
         }
     }
 

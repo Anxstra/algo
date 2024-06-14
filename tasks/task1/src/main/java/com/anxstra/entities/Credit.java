@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -41,7 +42,7 @@ public class Credit {
 
     public void increaseDebt(Discount discount) {
         BigDecimal currentRate = rate;
-        if (discount != null) {
+        if (!Objects.isNull(discount)) {
             currentRate = BigDecimal.ZERO.max(currentRate.subtract(discount.getDiscountAmount()));
         }
         money = money.multiply(new BigDecimal(1).add(currentRate.divide(new BigDecimal(100), 4,

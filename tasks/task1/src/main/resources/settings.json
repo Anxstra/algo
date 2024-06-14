@@ -6,7 +6,7 @@
       "type": "ID",
       "users": [0, 1]
     },
-    "sortBy": "NAME",
+    "sortBy": "DEBT",
     "useDepartments": [
       "gomel",
       "minsk"

@@ -1,19 +1,22 @@
 package com.anxstra.entities;
 
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class DBFile {
 
-    List<User> users;
+    private List<User> users;
 
-    List<Credit> credits;
+    private List<Credit> credits;
 
-    List<Discount> discounts;
+    private List<Discount> discounts;
 
-    List<Event> events;
+    private List<Event> events;
 
-    List<Transaction> transactions;
+    private List<Transaction> transactions;
 
     public DBFile() {
         users = new ArrayList<>();

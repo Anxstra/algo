@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class GsonConfigurer {
 
@@ -16,7 +17,7 @@ public class GsonConfigurer {
     }
 
     public static Gson getGson() {
-        if (gson == null) {
+        if (Objects.isNull(gson)) {
             gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateAdapter().nullSafe())
                                     .registerTypeAdapter(Discount.class, new DiscountAdapter().nullSafe())
                                     .setPrettyPrinting()

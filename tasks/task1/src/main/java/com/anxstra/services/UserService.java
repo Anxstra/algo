@@ -1,5 +1,6 @@
 package com.anxstra.services;
 
+import com.anxstra.dao.implementations.UserRepositoryImpl;
 import com.anxstra.dao.repositories.UserRepository;
 import com.anxstra.entities.ShowFor;
 import com.anxstra.entities.User;
@@ -17,8 +18,8 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserService() {
+        this.userRepository = new UserRepositoryImpl();
     }
 
     private List<User> findAllByIds(List<Integer> ids) {

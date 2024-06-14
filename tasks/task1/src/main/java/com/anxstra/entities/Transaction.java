@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -27,7 +28,7 @@ public class Transaction {
     public void convert(Event event) {
         Setting setting = AppConfigurer.getSetting();
         BigDecimal convertRatio;
-        if (event != null) {
+        if (!Objects.isNull(event)) {
             convertRatio = event.getCost();
         } else {
             convertRatio = currency == Currency.USD ? setting.getStartCostUSD() : setting.getStartCostEUR();

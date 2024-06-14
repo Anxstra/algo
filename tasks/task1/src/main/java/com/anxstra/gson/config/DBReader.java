@@ -4,6 +4,7 @@ import com.anxstra.entities.DBFile;
 import com.anxstra.entities.Setting;
 import com.anxstra.exceptions.FieldIsMissingException;
 import com.anxstra.exceptions.RequiredFileIsMissing;
+import com.anxstra.utils.GsonUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -15,6 +16,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import static com.anxstra.gson.config.PathConstants.BASE_PATH_TO_FILE;
 import static com.anxstra.gson.config.PathConstants.DB_FILE_NAME;
@@ -28,10 +30,8 @@ public class DBReader {
     }
 
     private static JsonObject getDBRoot() throws IOException {
-        try (BufferedReader reader =
-                     Files.newBufferedReader(Paths.get(BASE_PATH_TO_FILE + DB_FILE_NAME))) {
-            return GsonConfigurer.getGson()
-                                 .fromJson(reader, JsonObject.class);
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(BASE_PATH_TO_FILE + DB_FILE_NAME))) {
+            return GsonUtils.deserialize(reader, JsonObject.class);
         } catch (NoSuchFileException exception) {
             throw new FieldIsMissingException("db.json file cannot be found");
         }
@@ -42,7 +42,7 @@ public class DBReader {
             return getDBRoot().getAsJsonObject(DB_FILE_ROOT_NAME)
                               .getAsJsonArray(propertyName);
         } catch (IOException exception) {
-            System.out.println(exception.getMessage());
+            System.err.println(exception.getMessage());
             System.exit(0);
         }
         return null;
@@ -52,7 +52,7 @@ public class DBReader {
         try {
             Setting setting = AppConfigurer.getSetting();
             JsonObject root = getDBRoot();
-            if (root == null) {
+            if (Objects.isNull(root)) {
                 root = new JsonObject();
                 root.add(DB_FILE_ROOT_NAME, GsonConfigurer.getGson()
                                                           .toJsonTree(new DBFile()));
@@ -62,7 +62,7 @@ public class DBReader {
                 }
             }
         } catch (IOException exception) {
-            System.out.println(exception.getMessage());
+            System.err.println(exception.getMessage());
             System.exit(0);
         }
     }
@@ -73,23 +73,23 @@ public class DBReader {
         InputStream inputStream = Thread.currentThread()
                                         .getContextClassLoader()
                                         .getResourceAsStream(departmentPath);
-        if (inputStream == null) {
+        if (Objects.isNull(inputStream)) {
             throw new RequiredFileIsMissing("DB file cannot be found on path " + departmentPath);
         }
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            departmentFile = GsonConfigurer.getGson()
-                                           .fromJson(reader, JsonObject.class);}
+            departmentFile = GsonUtils.deserialize(reader, JsonObject.class);
+        }
+
         JsonObject departmentRoot = departmentFile.getAsJsonObject(DB_FILE_ROOT_NAME);
         departmentRoot.entrySet()
                       .forEach(entry -> moveRecords(entry.getValue()
                                                          .getAsJsonArray(), dbRoot.getAsJsonArray(entry.getKey())));
+
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(BASE_PATH_TO_FILE + departmentPath))) {
-            GsonConfigurer.getGson()
-                          .toJson(departmentFile, writer);
+            GsonUtils.serialize(departmentFile, writer);
         }
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(BASE_PATH_TO_FILE + DB_FILE_NAME))) {
-            GsonConfigurer.getGson()
-                          .toJson(dbFile, writer);
+            GsonUtils.serialize(dbFile, writer);
         }
     }
 

@@ -3,7 +3,7 @@ package com.anxstra.dao.implementations;
 import com.anxstra.dao.repositories.UserRepository;
 import com.anxstra.entities.User;
 import com.anxstra.gson.config.DBReader;
-import com.anxstra.gson.config.GsonConfigurer;
+import com.anxstra.utils.GsonUtils;
 
 import java.util.Optional;
 
@@ -14,8 +14,7 @@ public class UserRepositoryImpl implements UserRepository {
         return DBReader.getJsonArray("users")
                        .asList()
                        .stream()
-                       .map(el -> GsonConfigurer.getGson()
-                                                .fromJson(el, User.class))
+                       .map(el -> GsonUtils.deserialize(el, User.class))
                        .filter(user -> user.getId()
                                            .equals(id))
                        .findFirst();
@@ -26,8 +25,7 @@ public class UserRepositoryImpl implements UserRepository {
         return DBReader.getJsonArray("users")
                        .asList()
                        .stream()
-                       .map(el -> GsonConfigurer.getGson()
-                                                .fromJson(el, User.class))
+                       .map(el -> GsonUtils.deserialize(el, User.class))
                        .filter(user -> (user.getFullName()
                                             .equals(fullName)))
                        .findFirst();

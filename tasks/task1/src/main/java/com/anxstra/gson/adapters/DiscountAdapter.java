@@ -2,6 +2,7 @@ package com.anxstra.gson.adapters;
 
 import com.anxstra.entities.Discount;
 import com.anxstra.entities.enums.DiscountType;
+import com.anxstra.exceptions.WrongPropertyException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -24,7 +25,6 @@ public class DiscountAdapter extends TypeAdapter<Discount> {
     private static final String DATE_TO_PROPERTY_NAME = "dateTo";
 
     private static final String DISCOUNT_PROPERTY_NAME = "discount";
-
 
     @Override
     public void write(JsonWriter jsonWriter, Discount discount) throws IOException {
@@ -73,7 +73,8 @@ public class DiscountAdapter extends TypeAdapter<Discount> {
                 case DATE_FROM_PROPERTY_NAME -> discount.setDateFrom(LocalDate.parse(jsonReader.nextString()));
                 case DATE_TO_PROPERTY_NAME -> discount.setDateTo(LocalDate.parse(jsonReader.nextString()));
                 case DISCOUNT_PROPERTY_NAME -> discount.setDiscountAmount(new BigDecimal(jsonReader.nextString()));
-                default -> throw new IOException("Property with name " + fieldName + " is not a part of Discount");
+                default ->
+                        throw new WrongPropertyException("Property with name " + fieldName + " is not a part of Discount");
             }
         }
         jsonReader.endObject();

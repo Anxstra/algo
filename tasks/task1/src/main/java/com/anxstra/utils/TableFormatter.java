@@ -1,5 +1,8 @@
 package com.anxstra.utils;
 
+import java.time.LocalDate;
+import java.util.Objects;
+
 public class TableFormatter {
 
 
@@ -15,6 +18,10 @@ public class TableFormatter {
 
     private static String formatHeader(String head, int spaceCount) {
         return " ".repeat(spaceCount) + head + " ".repeat(spaceCount);
+    }
+
+    public static String formatRepaymentDay(LocalDate date) {
+        return Objects.isNull(date) ? "IN PROGRESS" : "DONE(" + date + ")";
     }
 
 
