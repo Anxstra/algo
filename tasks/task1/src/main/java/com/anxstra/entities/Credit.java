@@ -42,7 +42,7 @@ public class Credit {
 
     public void increaseDebt(Discount discount) {
         BigDecimal currentRate = rate;
-        if (!Objects.isNull(discount)) {
+        if (Objects.nonNull(discount)) {
             currentRate = BigDecimal.ZERO.max(currentRate.subtract(discount.getDiscountAmount()));
         }
         money = money.multiply(new BigDecimal(1).add(currentRate.divide(new BigDecimal(100), 4,

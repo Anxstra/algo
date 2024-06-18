@@ -80,7 +80,7 @@ public class CreditService {
                     transaction.getDate(), transaction.getCurrency());
             transaction.convert(event.orElse(null));
             credit.applyTransaction(transaction);
-            isRepaid = !Objects.isNull(credit.getRepaymentDate());
+            isRepaid = Objects.nonNull(credit.getRepaymentDate());
             lastTransactionDate = transaction.getDate();
         }
         return isRepaid;
