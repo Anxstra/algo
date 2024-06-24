@@ -3,5 +3,5 @@
 ```mvn clean package  -D docker.ignore=false```  
 ### Docker image will be outputted to  
 *target\docker\repository*  
-### to run docker image  
-```docker run repository/hello-world-image:1.0-SNAPSHOT```
+### to create and run docker container from image  
+```docker run --rm repository/hello-world-image:1.0-SNAPSHOT```
