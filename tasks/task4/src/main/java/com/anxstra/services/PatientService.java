@@ -1,9 +1,11 @@
 package com.anxstra.services;
 
+import com.anxstra.entities.Employee;
 import com.anxstra.entities.Patient;
 import com.anxstra.exceptions.PatientNotFoundException;
 import com.anxstra.repositories.PatientRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.anxstra.constants.ExceptionMessageConstants.PATIENT_NOT_FOUND;
@@ -42,5 +44,9 @@ public class PatientService implements Service<Integer, Patient> {
     @Override
     public void delete(Patient patient) {
         patientRepository.deleteById(patient.getId());
+    }
+
+    public List<Patient> findAllByDoctorAndAppointmentBetween(Employee employee, LocalDate from, LocalDate to) {
+        return patientRepository.getAllByDoctorAndDate(employee.getId(), from, to);
     }
 }

@@ -40,6 +40,7 @@ public class Main {
             testPatientService(pool);
             testAppointmentService(pool);
             testPrescriptionService(pool);
+            testJoinQuery(pool);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -254,6 +255,18 @@ public class Main {
         System.out.println("Delete prescription");
         prescriptionService.delete(prescription);
         prescriptionService.findAll().forEach(System.out::println);
+        printRowDelimiter();
+    }
+
+    private static void testJoinQuery(ConnectionPool pool) {
+        printRowDelimiter();
+        PatientService patientService = new PatientService(new PatientRepository(pool));
+        EmployeeService employeeService = new EmployeeService(new EmployeeRepository(pool));
+        Employee doctor = employeeService.findById(103);
+        LocalDate from = LocalDate.of(2024, 6, 17);
+        LocalDate to = LocalDate.of(2024, 6, 30);
+        System.out.printf("All patients with appointment to doctor %s between %s and %s%n", doctor.getId(), from, to);
+        patientService.findAllByDoctorAndAppointmentBetween(doctor, from, to).forEach(System.out::println);
         printRowDelimiter();
     }
 

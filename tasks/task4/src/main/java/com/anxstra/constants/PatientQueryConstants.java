@@ -26,6 +26,10 @@ public class PatientQueryConstants {
 
     public static final String DELETE_QUERY = "DELETE FROM patients WHERE id = ?";
 
+    public static final String GET_ALL_BY_DOCTOR_AND_DATE = "SELECT DISTINCT patients.* FROM patients " +
+            "JOIN appointments ON patients.id = appointments.patient_id " +
+            "WHERE appointment_date::date BETWEEN ? AND ? AND doctor_id = ?";
+
     private PatientQueryConstants() {
     }
 

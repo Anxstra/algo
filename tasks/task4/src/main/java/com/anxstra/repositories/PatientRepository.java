@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import static com.anxstra.constants.CommonConstant.FIRST_PARAM_POSITION;
 import static com.anxstra.constants.CommonConstant.SQL_EXCEPTION_MESSAGE;
 import static com.anxstra.constants.PatientQueryConstants.DELETE_QUERY;
+import static com.anxstra.constants.PatientQueryConstants.GET_ALL_BY_DOCTOR_AND_DATE;
 import static com.anxstra.constants.PatientQueryConstants.GET_ALL_QUERY;
 import static com.anxstra.constants.PatientQueryConstants.GET_BY_ID_QUERY;
 import static com.anxstra.constants.PatientQueryConstants.SAVE_QUERY;
@@ -105,6 +107,26 @@ public class PatientRepository implements CRUDRepository<Integer, Patient> {
         try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
             statement.setInt(FIRST_PARAM_POSITION, id);
             statement.execute();
+        } catch (SQLException e) {
+            throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
+        } finally {
+            connectionPool.releaseConnection(connection);
+        }
+    }
+
+    public List<Patient> getAllByDoctorAndDate(Integer doctorId, LocalDate from, LocalDate to) {
+        Connection connection = connectionPool.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(GET_ALL_BY_DOCTOR_AND_DATE)) {
+            int paramPos = FIRST_PARAM_POSITION;
+            statement.setDate(paramPos++, Date.valueOf(from));
+            statement.setDate(paramPos++, Date.valueOf(to));
+            statement.setInt(paramPos, doctorId);
+            ResultSet resultSet = statement.executeQuery();
+            List<Patient> patients = new ArrayList<>();
+            while (resultSet.next()) {
+                patients.add(rowMapper.mapRow(resultSet));
+            }
+            return patients;
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
