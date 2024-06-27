@@ -23,5 +23,9 @@ services:
     depends_on:
       - postgres
 
+networks:
+  default:
+    name: task4-bridge-network
+    external: true
 volumes:
   postgres_data:
