@@ -37,14 +37,13 @@ public class EmployeeRepository implements CRUDRepository<Integer, Employee> {
     @Override
     public Optional<Employee> getById(Integer id) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(GET_BY_ID_QUERY)) {
-            statement.setInt(FIRST_PARAM_POSITION, id);
-            ResultSet resultSet = statement.executeQuery();
-            Optional<Employee> employee = Optional.empty();
+        try (PreparedStatement prepStatement = connection.prepareStatement(GET_BY_ID_QUERY)) {
+            prepStatement.setInt(FIRST_PARAM_POSITION, id);
+            ResultSet resultSet = prepStatement.executeQuery();
             if (resultSet.next()) {
-                employee = Optional.of(rowMapper.mapRow(resultSet));
+                return Optional.of(rowMapper.mapRow(resultSet));
             }
-            return employee;
+            return Optional.empty();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -55,8 +54,8 @@ public class EmployeeRepository implements CRUDRepository<Integer, Employee> {
     @Override
     public List<Employee> getAll() {
         Connection connection = connectionPool.getConnection();
-        try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(GET_ALL_QUERY);
+        try (PreparedStatement prepStatement = connection.prepareStatement(GET_ALL_QUERY)) {
+            ResultSet resultSet = prepStatement.executeQuery();
             List<Employee> employees = new ArrayList<>();
             while (resultSet.next()) {
                 employees.add(rowMapper.mapRow(resultSet));
@@ -72,10 +71,10 @@ public class EmployeeRepository implements CRUDRepository<Integer, Employee> {
     @Override
     public void save(Employee entity) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(SAVE_QUERY, Statement.RETURN_GENERATED_KEYS)) {
-            prepareStatement(statement, entity, false);
-            statement.execute();
-            ResultSet resultSet = statement.getGeneratedKeys();
+        try (PreparedStatement prepStatement = connection.prepareStatement(SAVE_QUERY, Statement.RETURN_GENERATED_KEYS)) {
+            prepareStatement(prepStatement, entity, false);
+            prepStatement.execute();
+            ResultSet resultSet = prepStatement.getGeneratedKeys();
             if (resultSet.next()) {
                 entity.setId(resultSet.getInt(FIRST_PARAM_POSITION));
             }
@@ -89,9 +88,9 @@ public class EmployeeRepository implements CRUDRepository<Integer, Employee> {
     @Override
     public void update(Employee entity) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
-            prepareStatement(statement, entity, true);
-            statement.execute();
+        try (PreparedStatement prepStatement = connection.prepareStatement(UPDATE_QUERY)) {
+            prepareStatement(prepStatement, entity, true);
+            prepStatement.execute();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -102,9 +101,9 @@ public class EmployeeRepository implements CRUDRepository<Integer, Employee> {
     @Override
     public void deleteById(Integer id) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
-            statement.setInt(FIRST_PARAM_POSITION, id);
-            statement.execute();
+        try (PreparedStatement prepStatement = connection.prepareStatement(DELETE_QUERY)) {
+            prepStatement.setInt(FIRST_PARAM_POSITION, id);
+            prepStatement.execute();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -112,14 +111,16 @@ public class EmployeeRepository implements CRUDRepository<Integer, Employee> {
         }
     }
 
-    private void prepareStatement(PreparedStatement statement, Employee employee, boolean isUpdate) throws SQLException {
+    private void prepareStatement(PreparedStatement prepStatement,
+                                  Employee employee, boolean isUpdate) throws SQLException {
+
         int paramPos = FIRST_PARAM_POSITION;
-        statement.setString(paramPos++, employee.getFio());
-        statement.setString(paramPos++, employee.getPhoneNumber());
-        statement.setInt(paramPos++, employee.getPositionId());
-        statement.setDate(paramPos++, Date.valueOf(employee.getHireDate()));
+        prepStatement.setString(paramPos++, employee.getFio());
+        prepStatement.setString(paramPos++, employee.getPhoneNumber());
+        prepStatement.setInt(paramPos++, employee.getPositionId());
+        prepStatement.setDate(paramPos++, Date.valueOf(employee.getHireDate()));
         if (isUpdate) {
-            statement.setInt(paramPos, employee.getId());
+            prepStatement.setInt(paramPos, employee.getId());
         }
     }
 }

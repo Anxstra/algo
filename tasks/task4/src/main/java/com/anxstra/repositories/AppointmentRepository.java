@@ -37,14 +37,13 @@ public class AppointmentRepository implements CRUDRepository<Integer, Appointmen
     @Override
     public Optional<Appointment> getById(Integer id) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(GET_BY_ID_QUERY)) {
-            statement.setInt(FIRST_PARAM_POSITION, id);
-            ResultSet resultSet = statement.executeQuery();
-            Optional<Appointment> appointment = Optional.empty();
+        try (PreparedStatement prepStatement = connection.prepareStatement(GET_BY_ID_QUERY)) {
+            prepStatement.setInt(FIRST_PARAM_POSITION, id);
+            ResultSet resultSet = prepStatement.executeQuery();
             if (resultSet.next()) {
-                appointment = Optional.of(rowMapper.mapRow(resultSet));
+                return Optional.of(rowMapper.mapRow(resultSet));
             }
-            return appointment;
+            return Optional.empty();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -55,8 +54,8 @@ public class AppointmentRepository implements CRUDRepository<Integer, Appointmen
     @Override
     public List<Appointment> getAll() {
         Connection connection = connectionPool.getConnection();
-        try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(GET_ALL_QUERY);
+        try (PreparedStatement prepStatement = connection.prepareStatement(GET_ALL_QUERY)) {
+            ResultSet resultSet = prepStatement.executeQuery();
             List<Appointment> appointments = new ArrayList<>();
             while (resultSet.next()) {
                 appointments.add(rowMapper.mapRow(resultSet));
@@ -72,10 +71,10 @@ public class AppointmentRepository implements CRUDRepository<Integer, Appointmen
     @Override
     public void save(Appointment entity) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(SAVE_QUERY, Statement.RETURN_GENERATED_KEYS)) {
-            prepareStatement(statement, entity, false);
-            statement.execute();
-            ResultSet resultSet = statement.getGeneratedKeys();
+        try (PreparedStatement prepStatement = connection.prepareStatement(SAVE_QUERY, Statement.RETURN_GENERATED_KEYS)) {
+            prepareStatement(prepStatement, entity, false);
+            prepStatement.execute();
+            ResultSet resultSet = prepStatement.getGeneratedKeys();
             if (resultSet.next()) {
                 entity.setId(resultSet.getInt(FIRST_PARAM_POSITION));
             }
@@ -89,9 +88,9 @@ public class AppointmentRepository implements CRUDRepository<Integer, Appointmen
     @Override
     public void update(Appointment entity) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
-            prepareStatement(statement, entity, true);
-            statement.execute();
+        try (PreparedStatement prepStatement = connection.prepareStatement(UPDATE_QUERY)) {
+            prepareStatement(prepStatement, entity, true);
+            prepStatement.execute();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -102,9 +101,9 @@ public class AppointmentRepository implements CRUDRepository<Integer, Appointmen
     @Override
     public void deleteById(Integer id) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
-            statement.setInt(FIRST_PARAM_POSITION, id);
-            statement.execute();
+        try (PreparedStatement prepStatement = connection.prepareStatement(DELETE_QUERY)) {
+            prepStatement.setInt(FIRST_PARAM_POSITION, id);
+            prepStatement.execute();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -112,15 +111,17 @@ public class AppointmentRepository implements CRUDRepository<Integer, Appointmen
         }
     }
 
-    private void prepareStatement(PreparedStatement statement, Appointment appointment, boolean isUpdate) throws SQLException {
+    private void prepareStatement(PreparedStatement prepStatement,
+                                  Appointment appointment, boolean isUpdate) throws SQLException {
+
         int paramPos = FIRST_PARAM_POSITION;
-        statement.setInt(paramPos++, appointment.getPatientId());
-        statement.setInt(paramPos++, appointment.getDoctorId());
-        statement.setInt(paramPos++, appointment.getCabinetId());
-        statement.setInt(paramPos++, appointment.getTypeId());
-        statement.setTimestamp(paramPos++, Timestamp.valueOf(appointment.getDate()));
+        prepStatement.setInt(paramPos++, appointment.getPatientId());
+        prepStatement.setInt(paramPos++, appointment.getDoctorId());
+        prepStatement.setInt(paramPos++, appointment.getCabinetId());
+        prepStatement.setInt(paramPos++, appointment.getTypeId());
+        prepStatement.setTimestamp(paramPos++, Timestamp.valueOf(appointment.getDate()));
         if (isUpdate) {
-            statement.setInt(paramPos, appointment.getId());
+            prepStatement.setInt(paramPos, appointment.getId());
         }
     }
 }

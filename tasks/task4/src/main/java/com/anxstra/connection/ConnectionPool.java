@@ -9,6 +9,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.anxstra.constants.ExceptionMessageConstants.NON_POOLING_CONNECTION;
+import static com.anxstra.constants.ExceptionMessageConstants.OUT_OF_CONNECTION;
+
 public class ConnectionPool {
 
     private static final int POOL_SIZE = 10;
@@ -41,7 +44,7 @@ public class ConnectionPool {
 
     public Connection getConnection() {
         if (connections.isEmpty()) {
-            throw new OutOfConnectionsExceptions("All " + POOL_SIZE + " connections are being used");
+            throw new OutOfConnectionsExceptions(OUT_OF_CONNECTION);
         }
         Connection connection = connections.remove(connections.size() - 1);
         usedConnections.add(connection);
@@ -52,7 +55,7 @@ public class ConnectionPool {
         if (usedConnections.remove(connection)) {
             connections.add(connection);
         } else {
-            throw new NonPoolingConnection("Provided connection object isn't part of this connection pool");
+            throw new NonPoolingConnection(NON_POOLING_CONNECTION);
         }
     }
 }

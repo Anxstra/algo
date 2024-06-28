@@ -8,6 +8,9 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.Properties;
 
+import static com.anxstra.constants.ExceptionMessageConstants.CONFIG_FILE_MISSING;
+import static com.anxstra.constants.ExceptionMessageConstants.CONFIG_PROPERTY_MISSING;
+
 public class PropertiesSource {
 
     private static final String HOST_PROPERTY = "host";
@@ -19,6 +22,8 @@ public class PropertiesSource {
     private static final String PASSWORD_PROPERTY = "password";
 
     private static final String DATABASE_PROPERTY = "database";
+
+    private static final String CONFIG_FILE_NAME = "application.properties";
 
     private static ConnectionProperties properties;
 
@@ -36,10 +41,10 @@ public class PropertiesSource {
         Properties dbProps = new Properties();
         InputStream inputStream = Thread.currentThread()
                                         .getContextClassLoader()
-                                        .getResourceAsStream("application.properties");
+                                        .getResourceAsStream(CONFIG_FILE_NAME);
 
         if (Objects.isNull(inputStream)) {
-            throw new ConnectionConfigFileMissingException("File application.properties is missing");
+            throw new ConnectionConfigFileMissingException(CONFIG_FILE_MISSING.formatted(CONFIG_FILE_NAME));
         }
         dbProps.load(inputStream);
         properties = ConnectionProperties.builder()
@@ -54,7 +59,7 @@ public class PropertiesSource {
     private static String readProperty(Properties propertiesFile, String property) {
         String value = propertiesFile.getProperty(property);
         if (Objects.isNull(value)) {
-            throw new PropertyMissingException("File application.properties doesn't contains property" + property);
+            throw new PropertyMissingException(CONFIG_PROPERTY_MISSING.formatted(property));
         }
         return value;
     }

@@ -39,14 +39,13 @@ public class PatientRepository implements CRUDRepository<Integer, Patient> {
     @Override
     public Optional<Patient> getById(Integer id) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(GET_BY_ID_QUERY)) {
-            statement.setInt(FIRST_PARAM_POSITION, id);
-            ResultSet resultSet = statement.executeQuery();
-            Optional<Patient> patient = Optional.empty();
+        try (PreparedStatement prepStatement = connection.prepareStatement(GET_BY_ID_QUERY)) {
+            prepStatement.setInt(FIRST_PARAM_POSITION, id);
+            ResultSet resultSet = prepStatement.executeQuery();
             if (resultSet.next()) {
-                patient = Optional.of(rowMapper.mapRow(resultSet));
+                return Optional.of(rowMapper.mapRow(resultSet));
             }
-            return patient;
+            return Optional.empty();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -57,8 +56,8 @@ public class PatientRepository implements CRUDRepository<Integer, Patient> {
     @Override
     public List<Patient> getAll() {
         Connection connection = connectionPool.getConnection();
-        try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(GET_ALL_QUERY);
+        try (PreparedStatement prepStatement = connection.prepareStatement(GET_ALL_QUERY)) {
+            ResultSet resultSet = prepStatement.executeQuery();
             List<Patient> patients = new ArrayList<>();
             while (resultSet.next()) {
                 patients.add(rowMapper.mapRow(resultSet));
@@ -74,10 +73,10 @@ public class PatientRepository implements CRUDRepository<Integer, Patient> {
     @Override
     public void save(Patient entity) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(SAVE_QUERY, Statement.RETURN_GENERATED_KEYS)) {
-            prepareStatement(statement, entity, false);
-            statement.execute();
-            ResultSet resultSet = statement.getGeneratedKeys();
+        try (PreparedStatement prepStatement = connection.prepareStatement(SAVE_QUERY, Statement.RETURN_GENERATED_KEYS)) {
+            prepareStatement(prepStatement, entity, false);
+            prepStatement.execute();
+            ResultSet resultSet = prepStatement.getGeneratedKeys();
             if (resultSet.next()) {
                 entity.setId(resultSet.getInt(FIRST_PARAM_POSITION));
             }
@@ -91,9 +90,9 @@ public class PatientRepository implements CRUDRepository<Integer, Patient> {
     @Override
     public void update(Patient entity) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
-            prepareStatement(statement, entity, true);
-            statement.execute();
+        try (PreparedStatement prepStatement = connection.prepareStatement(UPDATE_QUERY)) {
+            prepareStatement(prepStatement, entity, true);
+            prepStatement.execute();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -104,9 +103,9 @@ public class PatientRepository implements CRUDRepository<Integer, Patient> {
     @Override
     public void deleteById(Integer id) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
-            statement.setInt(FIRST_PARAM_POSITION, id);
-            statement.execute();
+        try (PreparedStatement prepStatement = connection.prepareStatement(DELETE_QUERY)) {
+            prepStatement.setInt(FIRST_PARAM_POSITION, id);
+            prepStatement.execute();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -116,12 +115,12 @@ public class PatientRepository implements CRUDRepository<Integer, Patient> {
 
     public List<Patient> getAllByDoctorAndDate(Integer doctorId, LocalDate from, LocalDate to) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(GET_ALL_BY_DOCTOR_AND_DATE)) {
+        try (PreparedStatement prepStatement = connection.prepareStatement(GET_ALL_BY_DOCTOR_AND_DATE)) {
             int paramPos = FIRST_PARAM_POSITION;
-            statement.setDate(paramPos++, Date.valueOf(from));
-            statement.setDate(paramPos++, Date.valueOf(to));
-            statement.setInt(paramPos, doctorId);
-            ResultSet resultSet = statement.executeQuery();
+            prepStatement.setDate(paramPos++, Date.valueOf(from));
+            prepStatement.setDate(paramPos++, Date.valueOf(to));
+            prepStatement.setInt(paramPos, doctorId);
+            ResultSet resultSet = prepStatement.executeQuery();
             List<Patient> patients = new ArrayList<>();
             while (resultSet.next()) {
                 patients.add(rowMapper.mapRow(resultSet));
@@ -134,15 +133,17 @@ public class PatientRepository implements CRUDRepository<Integer, Patient> {
         }
     }
 
-    private void prepareStatement(PreparedStatement statement, Patient patient, boolean isUpdate) throws SQLException {
+    private void prepareStatement(PreparedStatement prepStatement,
+                                  Patient patient, boolean isUpdate) throws SQLException {
+
         int paramPos = FIRST_PARAM_POSITION;
-        statement.setString(paramPos++, patient.getFio());
-        statement.setString(paramPos++, patient.getPhoneNumber());
-        statement.setString(paramPos++, patient.getAddress());
-        statement.setDate(paramPos++, Date.valueOf(patient.getBirthday()));
-        statement.setString(paramPos++, patient.getPassport());
+        prepStatement.setString(paramPos++, patient.getFio());
+        prepStatement.setString(paramPos++, patient.getPhoneNumber());
+        prepStatement.setString(paramPos++, patient.getAddress());
+        prepStatement.setDate(paramPos++, Date.valueOf(patient.getBirthday()));
+        prepStatement.setString(paramPos++, patient.getPassport());
         if (isUpdate) {
-            statement.setInt(paramPos, patient.getId());
+            prepStatement.setInt(paramPos, patient.getId());
         }
     }
 }

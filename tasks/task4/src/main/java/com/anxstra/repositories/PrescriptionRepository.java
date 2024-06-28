@@ -37,14 +37,13 @@ public class PrescriptionRepository implements CRUDRepository<Integer, Prescript
     @Override
     public Optional<Prescription> getById(Integer id) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(GET_BY_ID_QUERY)) {
-            statement.setInt(FIRST_PARAM_POSITION, id);
-            ResultSet resultSet = statement.executeQuery();
-            Optional<Prescription> prescription = Optional.empty();
+        try (PreparedStatement prepStatement = connection.prepareStatement(GET_BY_ID_QUERY)) {
+            prepStatement.setInt(FIRST_PARAM_POSITION, id);
+            ResultSet resultSet = prepStatement.executeQuery();
             if (resultSet.next()) {
-                prescription = Optional.of(rowMapper.mapRow(resultSet));
+                return Optional.of(rowMapper.mapRow(resultSet));
             }
-            return prescription;
+            return Optional.empty();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -55,8 +54,8 @@ public class PrescriptionRepository implements CRUDRepository<Integer, Prescript
     @Override
     public List<Prescription> getAll() {
         Connection connection = connectionPool.getConnection();
-        try (Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(GET_ALL_QUERY);
+        try (PreparedStatement prepStatement = connection.prepareStatement(GET_ALL_QUERY)) {
+            ResultSet resultSet = prepStatement.executeQuery();
             List<Prescription> prescriptions = new ArrayList<>();
             while (resultSet.next()) {
                 prescriptions.add(rowMapper.mapRow(resultSet));
@@ -72,10 +71,10 @@ public class PrescriptionRepository implements CRUDRepository<Integer, Prescript
     @Override
     public void save(Prescription entity) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(SAVE_QUERY, Statement.RETURN_GENERATED_KEYS)) {
-            prepareStatement(statement, entity, false);
-            statement.execute();
-            ResultSet resultSet = statement.getGeneratedKeys();
+        try (PreparedStatement prepStatement = connection.prepareStatement(SAVE_QUERY, Statement.RETURN_GENERATED_KEYS)) {
+            prepareStatement(prepStatement, entity, false);
+            prepStatement.execute();
+            ResultSet resultSet = prepStatement.getGeneratedKeys();
             if (resultSet.next()) {
                 entity.setId(resultSet.getInt(FIRST_PARAM_POSITION));
             }
@@ -89,9 +88,9 @@ public class PrescriptionRepository implements CRUDRepository<Integer, Prescript
     @Override
     public void update(Prescription entity) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
-            prepareStatement(statement, entity, true);
-            statement.execute();
+        try (PreparedStatement prepStatement = connection.prepareStatement(UPDATE_QUERY)) {
+            prepareStatement(prepStatement, entity, true);
+            prepStatement.execute();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -102,9 +101,9 @@ public class PrescriptionRepository implements CRUDRepository<Integer, Prescript
     @Override
     public void deleteById(Integer id) {
         Connection connection = connectionPool.getConnection();
-        try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
-            statement.setInt(FIRST_PARAM_POSITION, id);
-            statement.execute();
+        try (PreparedStatement prepStatement = connection.prepareStatement(DELETE_QUERY)) {
+            prepStatement.setInt(FIRST_PARAM_POSITION, id);
+            prepStatement.execute();
         } catch (SQLException e) {
             throw new DatabaseAccessException(SQL_EXCEPTION_MESSAGE.formatted(e.getMessage()));
         } finally {
@@ -112,15 +111,17 @@ public class PrescriptionRepository implements CRUDRepository<Integer, Prescript
         }
     }
 
-    private void prepareStatement(PreparedStatement statement, Prescription prescription, boolean isUpdate) throws SQLException {
+    private void prepareStatement(PreparedStatement prepStatement,
+                                  Prescription prescription, boolean isUpdate) throws SQLException {
+
         int paramPos = FIRST_PARAM_POSITION;
-        statement.setInt(paramPos++, prescription.getDoctorId());
-        statement.setInt(paramPos++, prescription.getPatientId());
-        statement.setString(paramPos++, prescription.getDescription());
-        statement.setDate(paramPos++, Date.valueOf(prescription.getIssueDate()));
-        statement.setDate(paramPos++, Date.valueOf(prescription.getExpirationDate()));
+        prepStatement.setInt(paramPos++, prescription.getDoctorId());
+        prepStatement.setInt(paramPos++, prescription.getPatientId());
+        prepStatement.setString(paramPos++, prescription.getDescription());
+        prepStatement.setDate(paramPos++, Date.valueOf(prescription.getIssueDate()));
+        prepStatement.setDate(paramPos++, Date.valueOf(prescription.getExpirationDate()));
         if (isUpdate) {
-            statement.setInt(paramPos, prescription.getId());
+            prepStatement.setInt(paramPos, prescription.getId());
         }
     }
 }
